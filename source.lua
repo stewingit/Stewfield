@@ -784,29 +784,28 @@ do
 	end
 
 
-	Rayfield.Main.Shadow.Image.Image = customAssets[tostring(line3)]
-	Rayfield.Main.Topbar.Hide.Image = customAssets[tostring(close)]
-	Rayfield.Main.Topbar.ChangeSize.Image = customAssets[tostring(minimise)]
-	Rayfield.Main.Topbar.Settings.Image = customAssets[tostring(settings)]
-	Rayfield.Main.Topbar.Icon.Image = customAssets[tostring(arrow)]
-	Rayfield.Main.Topbar.Search.Image = customAssets["search2"]
-	Rayfield.Main.Topbar.Search.ImageRectOffset = Vector2.new(0, 0)
-	Rayfield.Main.Topbar.Search.ImageRectSize = Vector2.new(0, 0)
-	Rayfield.Main.Elements.Template.Toggle.Switch.Shadow.Image = customAssets[tostring(line2)]
-	Rayfield.Main.Elements.Template.Slider.Main.Shadow.Image = customAssets[tostring(line2)]
-	Rayfield.Main.Elements.Template.Dropdown.Toggle.Image = customAssets["up"]
-	Rayfield.Main.Elements.Template.Dropdown.Toggle.ImageRectOffset = Vector2.new(0, 0)
-	Rayfield.Main.Elements.Template.Dropdown.Toggle.ImageRectSize = Vector2.new(0, 0)
-	Rayfield.Main.Elements.Template.Label.Icon.Image = customAssets[tostring(warning)]
-	Rayfield.Main.Elements.Template.ColorPicker.CPBackground.MainCP.Image = customAssets[tostring(blank)]
-	Rayfield.Main.Elements.Template.ColorPicker.CPBackground.MainCP.MainPoint.Image = customAssets[tostring(dot)]
-	Rayfield.Main.Elements.Template.ColorPicker.ColorSlider.SliderPoint.Image = customAssets[tostring(dot)]
-	Rayfield.Main.TabList.Template.Image.Image = customAssets[tostring(cube)]
-	Rayfield.Main.Search.Search.Image = customAssets[tostring(search)]
-	Rayfield.Main.Search.Shadow.Image = customAssets[tostring(line3)]
-	Rayfield.Notifications.Template.Icon.Image = customAssets[tostring(warning2)]
-	Rayfield.Notifications.Template.Shadow.Image = customAssets[tostring(line)]
-	Rayfield.Loading.Banner.Image = customAssets[tostring(111263549366178)]
+Rayfield.Main.Shadow.Image.Image = customAssets["line3"]
+Rayfield.Main.Topbar.Hide.Image = customAssets["close"]
+Rayfield.Main.Topbar.ChangeSize.Image = customAssets["minimise"]
+Rayfield.Main.Topbar.Settings.Image = customAssets["settings"]
+Rayfield.Main.Topbar.Icon.Image = customAssets["arrow"]
+Rayfield.Main.Topbar.Search.Image = customAssets["search2"]
+Rayfield.Main.Topbar.Search.ImageRectOffset = Vector2.new(0, 0)
+Rayfield.Main.Topbar.Search.ImageRectSize = Vector2.new(0, 0)
+Rayfield.Main.Elements.Template.Toggle.Switch.Shadow.Image = customAssets["line2"]
+Rayfield.Main.Elements.Template.Slider.Main.Shadow.Image = customAssets["line2"]
+Rayfield.Main.Elements.Template.Dropdown.Toggle.Image = customAssets["up"]
+Rayfield.Main.Elements.Template.Dropdown.Toggle.ImageRectOffset = Vector2.new(0, 0)
+Rayfield.Main.Elements.Template.Dropdown.Toggle.ImageRectSize = Vector2.new(0, 0)
+Rayfield.Main.Elements.Template.Label.Icon.Image = customAssets["warning"]
+Rayfield.Main.Elements.Template.ColorPicker.CPBackground.MainCP.Image = customAssets["blank"]
+Rayfield.Main.Elements.Template.ColorPicker.CPBackground.MainCP.MainPoint.Image = customAssets["dot"]
+Rayfield.Main.Elements.Template.ColorPicker.ColorSlider.SliderPoint.Image = customAssets["dot"]
+Rayfield.Main.TabList.Template.Image.Image = customAssets["cube"]
+Rayfield.Main.Search.Search.Image = customAssets["search"]
+Rayfield.Main.Search.Shadow.Image = customAssets["line3"]
+Rayfield.Notifications.Template.Icon.Image = customAssets["warning2"]
+Rayfield.Notifications.Template.Shadow.Image = customAssets["line"]
 
 end -- custom asset block
 
