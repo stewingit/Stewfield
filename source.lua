@@ -1403,7 +1403,7 @@ end
 
 local function Maximise()
 	Debounce = true
-	Topbar.ChangeSize.Image = customAssets[tostring(minimise)]
+	Topbar.ChangeSize.Image = customAssets["minimise"]
 
 	TweenService:Create(Topbar.UIStroke, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 	TweenService:Create(Main.Shadow.Image, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {ImageTransparency = 0.6}):Play()
@@ -1483,7 +1483,7 @@ end
 
 local function Minimise()
 	Debounce = true
-	Topbar.ChangeSize.Image = customAssets[tostring(maximise)]
+	Topbar.ChangeSize.Image = customAssets["maximise"]
 
 	Topbar.UIStroke.Color = SelectedTheme.ElementStroke
 
