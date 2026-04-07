@@ -644,6 +644,8 @@ local RayfieldLibrary = {
 }
 
 
+
+
 -- Interface Management
 
 local RayfieldAssetId = customAssetId or 75623004084296
@@ -750,17 +752,10 @@ do
 					end
 				end)
 
--- Asset Loading Animation
-local animFrames = {"...", "..", ".", ".."}
-local frameIndex = 1
-
-while nextMissing() do
-    if LoadingAssetsLabel then
-        LoadingAssetsLabel.Text = "Loading Assets" .. animFrames[frameIndex]
-    end
-    frameIndex = (frameIndex % #animFrames) + 1
-    task.wait(0.25) -- Adjust this value to change the speed of the animation
-end
+				while nextMissing() do
+					task.wait(0.1)
+				end
+			end
 			if LoadingAssetsLabel then LoadingAssetsLabel:Destroy() end
 
 			for id, _ in assetFiles do
