@@ -693,22 +693,23 @@ LoadingAssetsLabel.BackgroundColor3 = Color3.new(0, 0, 0)
 LoadingAssetsLabel.BackgroundTransparency = 1
 LoadingAssetsLabel.Size = UDim2.new(1, 0, 0, 30)
 LoadingAssetsLabel.Position = UDim2.new(0, 0, 0, 10)
-LoadingAssetsLabel.Text = "Loading Assets..."
+LoadingAssetsLabel.Text = "Loading Assets" -- Start with no dots
 LoadingAssetsLabel.TextColor3 = Color3.new(1, 1, 1)
 LoadingAssetsLabel.TextSize = 26
 LoadingAssetsLabel.Font = Enum.Font.SourceSansBold
 LoadingAssetsLabel.ZIndex = 10000
-Rayfield.Enabled = true -- Ensure UI is visible to see the text
+Rayfield.Enabled = true 
 
--- Dot Animation Logic
+-- Updated Dot Animation Logic
 task.spawn(function()
-    local animFrames = {"...", "..", ".", ".."}
+    -- Sequence: None -> . -> .. -> ... -> .. -> .
+    local animFrames = {"", ".", "..", "...", "..", "."}
     local index = 1
-    -- This loop runs as long as the label exists
+    
     while LoadingAssetsLabel and LoadingAssetsLabel.Parent do
         LoadingAssetsLabel.Text = "Loading Assets" .. animFrames[index]
         index = (index % #animFrames) + 1
-        task.wait(0.3) -- Change this value to adjust animation speed
+        task.wait(0.4) -- Slightly slower wait for a smoother "ping-pong" effect
     end
 end)
 
