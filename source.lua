@@ -3796,10 +3796,9 @@ Main.Search.Input:GetPropertyChangedSignal('Text'):Connect(function()
 end)
 
 Main.Search.Input.FocusLost:Connect(function(enterPressed)
-	if #Main.Search.Input.Text == 0 and searchOpen then
-		task.wait(0.12)
-		closeSearch()
-	end
+	-- Intentionally left blank. 
+	-- This stops the search tab from auto-closing when tapping outside the text box on mobile.
+	-- Search will now ONLY close when the Search Icon or a "Go to tab" button is clicked.
 end)
 
 Topbar.Search.MouseButton1Click:Connect(function()
