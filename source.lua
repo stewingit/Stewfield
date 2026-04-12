@@ -747,8 +747,6 @@ LoadingFrame.Version.Text = Release
 
 local Icons = useStudio and require(script.Parent.icons) or loadWithTimeout('https://raw.githubusercontent.com/stewingit/stewfield/refs/heads/main/icons.lua')
 
-local CFileName = nil
-local CEnabled = false
 local Minimised = false
 local Hidden = false
 local Debounce = false
@@ -954,83 +952,6 @@ end
 
 local function UnpackColor(Color)
 	return Color3.fromRGB(Color.R, Color.G, Color.B)
-end
-
-local function LoadConfiguration(Configuration)
-	local success, Data = pcall(function() return HttpService:JSONDecode(Configuration) end)
-	local changed
-
-	if not success then warn('Stewfield had an issue decoding the configuration file, please try delete the file and reopen Stewfield.') return end
-
-	for FlagName, Flag in pairs(RayfieldLibrary.Flags) do
-		local FlagValue = Data[FlagName]
-
-		if (typeof(FlagValue) == 'boolean' and FlagValue == false) or FlagValue then
-			task.spawn(function()
-				if Flag.Type == "ColorPicker" then
-					changed = true
-					Flag:Set(UnpackColor(FlagValue))
-				else
-					if (Flag.CurrentValue or Flag.CurrentKeybind or Flag.CurrentOption or Flag.Color) ~= FlagValue then 
-						changed = true
-						Flag:Set(FlagValue) 	
-					end
-				end
-			end)
-		else
-			warn("Stewfield | Unable to find '"..FlagName.. "' in the save file.")
-			print("The error above may not be an issue if new elements have been added or not been set values.")
-		end
-	end
-
-	return changed
-end
-
-local function SaveConfiguration()
-	if not CEnabled or not globalLoaded then return end
-
-	if debugX then
-		print('Saving')
-	end
-
-	local Data = {}
-	for i, v in pairs(RayfieldLibrary.Flags) do
-		if v.Type == "ColorPicker" then
-			Data[i] = PackColor(v.Color)
-		else
-			if typeof(v.CurrentValue) == 'boolean' then
-				if v.CurrentValue == false then
-					Data[i] = false
-				else
-					Data[i] = v.CurrentValue or v.CurrentKeybind or v.CurrentOption or v.Color
-				end
-			else
-				Data[i] = v.CurrentValue or v.CurrentKeybind or v.CurrentOption or v.Color
-			end
-		end
-	end
-
-	if useStudio then
-		if script.Parent:FindFirstChild('configuration') then script.Parent.configuration:Destroy() end
-
-		local ScreenGui = Instance.new("ScreenGui")
-		ScreenGui.Parent = script.Parent
-		ScreenGui.Name = 'configuration'
-
-		local TextBox = Instance.new("TextBox")
-		TextBox.Parent = ScreenGui
-		TextBox.Size = UDim2.new(0, 800, 0, 50)
-		TextBox.AnchorPoint = Vector2.new(0.5, 0)
-		TextBox.Position = UDim2.new(0.5, 0, 0, 30)
-		TextBox.Text = HttpService:JSONEncode(Data)
-		TextBox.ClearTextOnFocus = false
-	end
-
-	if debugX then
-		warn(HttpService:JSONEncode(Data))
-	end
-
-	callSafely(writefile, ConfigurationFolder .. "/" .. CFileName .. ConfigurationExtension, tostring(HttpService:JSONEncode(Data)))
 end
 
 function RayfieldLibrary:Notify(data)
@@ -1689,28 +1610,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 		currentSettingsName = "Default_settings"
 	end
 
-	pcall(function()
-		if not Settings.ConfigurationSaving then
-			Settings.ConfigurationSaving = { Enabled = false }
-		end
-
-		if not Settings.ConfigurationSaving.FileName then
-			Settings.ConfigurationSaving.FileName = tostring(game.PlaceId)
-		end
-
-		if Settings.ConfigurationSaving.Enabled == nil then
-			Settings.ConfigurationSaving.Enabled = false
-		end
-
-		CFileName = Settings.ConfigurationSaving.FileName
-		ConfigurationFolder = Settings.ConfigurationSaving.FolderName or ConfigurationFolder
-		CEnabled = Settings.ConfigurationSaving.Enabled
-
-		if Settings.ConfigurationSaving.Enabled then
-			ensureFolder(ConfigurationFolder)
-		end
-	end)
-
 	loadSettings()
 	
 	local savedTheme = getSetting("General", "theme")
@@ -2286,9 +2185,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 				pcall(function()ColorPickerSettings.Callback(Color3.fromHSV(h,s,v))end)
 				local r,g,b = math.floor((h*255)+0.5),math.floor((s*255)+0.5),math.floor((v*255)+0.5)
 				ColorPickerSettings.Color = Color3.fromRGB(r,g,b)
-				if not ColorPickerSettings.Ext then
-					SaveConfiguration()
-				end
 			end)
 			local function rgbBoxes(box,toChange)
 				local value = tonumber(box.Text) 
@@ -2305,9 +2201,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 				end
 				local r,g,b = math.floor((h*255)+0.5),math.floor((s*255)+0.5),math.floor((v*255)+0.5)
 				ColorPickerSettings.Color = Color3.fromRGB(r,g,b)
-				if not ColorPickerSettings.Ext then
-					SaveConfiguration(ColorPickerSettings.Flag..'\n'..tostring(ColorPickerSettings.Color))
-				end
 			end
 			ColorPicker.RGB.RInput.InputBox.FocusLost:connect(function()
 				rgbBoxes(ColorPicker.RGB.RInput.InputBox,"R")
@@ -2340,9 +2233,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 					ColorPicker.HexInput.InputBox.Text = string.format("#%02X%02X%02X",color.R*0xFF,color.G*0xFF,color.B*0xFF)
 					pcall(function()ColorPickerSettings.Callback(Color3.fromHSV(h,s,v))end)
 					ColorPickerSettings.Color = Color3.fromRGB(r,g,b)
-					if not ColorPickerSettings.Ext then
-						SaveConfiguration()
-					end
 				end
 				if sliderDragging then 
 					local localX = math.clamp(mouse.X-Slider.AbsolutePosition.X,0,Slider.AbsoluteSize.X)
@@ -2360,9 +2250,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 					ColorPicker.HexInput.InputBox.Text = string.format("#%02X%02X%02X",color.R*0xFF,color.G*0xFF,color.B*0xFF)
 					pcall(function()ColorPickerSettings.Callback(Color3.fromHSV(h,s,v))end)
 					ColorPickerSettings.Color = Color3.fromRGB(r,g,b)
-					if not ColorPickerSettings.Ext then
-						SaveConfiguration()
-					end
 				end
 			end)
 
@@ -2374,12 +2261,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 					colorPickerInputConnection:Disconnect()
 				end
 			end)
-
-			if Settings.ConfigurationSaving then
-				if Settings.ConfigurationSaving.Enabled and ColorPickerSettings.Flag then
-					RayfieldLibrary.Flags[ColorPickerSettings.Flag] = ColorPickerSettings
-				end
-			end
 
 			function ColorPickerSettings:Set(RGBColor)
 				ColorPickerSettings.Color = RGBColor
@@ -2635,9 +2516,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 					Input.InputFrame.InputBox.Text = ""
 				end
 
-				if not InputSettings.Ext then
-					SaveConfiguration()
-				end
 			end)
 
 			Input.MouseEnter:Connect(function()
@@ -2661,9 +2539,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 						InputSettings.Callback(text)
 					end)
 
-					if not InputSettings.Ext then
-						SaveConfiguration()
-					end
 				end
 			end
 
@@ -2674,12 +2549,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 					end
 					Input:Destroy()
 					Input = nil
-				end
-			end
-
-			if Settings.ConfigurationSaving then
-				if Settings.ConfigurationSaving.Enabled and InputSettings.Flag then
-					RayfieldLibrary.Flags[InputSettings.Flag] = InputSettings
 				end
 			end
 
@@ -2892,9 +2761,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 							Dropdown.List.Visible = false
 						end
 						Debounce = false
-						if not DropdownSettings.Ext then
-							SaveConfiguration()
-						end
 					end)
 
 					Rayfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
@@ -3013,12 +2879,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 				end
 			end
 
-			if Settings.ConfigurationSaving then
-				if Settings.ConfigurationSaving.Enabled and DropdownSettings.Flag then
-					RayfieldLibrary.Flags[DropdownSettings.Flag] = DropdownSettings
-				end
-			end
-
 			Rayfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
 				Dropdown.Toggle.ImageColor3 = SelectedTheme.TextColor
 				TweenService:Create(Dropdown, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
@@ -3057,9 +2917,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 				CheckingForKey = false
 				if Keybind.KeybindFrame.KeybindBox.Text == nil or Keybind.KeybindFrame.KeybindBox.Text == "" then
 					Keybind.KeybindFrame.KeybindBox.Text = KeybindSettings.CurrentKeybind
-					if not KeybindSettings.Ext then
-						SaveConfiguration()
-					end
 				end
 			end)
 
@@ -3079,9 +2936,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 						Keybind.KeybindFrame.KeybindBox.Text = tostring(NewKeyNoEnum)
 						KeybindSettings.CurrentKeybind = tostring(NewKeyNoEnum)
 						Keybind.KeybindFrame.KeybindBox:ReleaseFocus()
-						if not KeybindSettings.Ext then
-							SaveConfiguration()
-						end
 
 						if KeybindSettings.CallOnChange then
 							KeybindSettings.Callback(tostring(NewKeyNoEnum))
@@ -3135,9 +2989,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 				Keybind.KeybindFrame.KeybindBox.Text = tostring(NewKeybind)
 				KeybindSettings.CurrentKeybind = tostring(NewKeybind)
 				Keybind.KeybindFrame.KeybindBox:ReleaseFocus()
-				if not KeybindSettings.Ext then
-					SaveConfiguration()
-				end
 
 				if KeybindSettings.CallOnChange then
 					KeybindSettings.Callback(tostring(NewKeybind))
@@ -3151,12 +3002,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 					end
 					Keybind:Destroy()
 					Keybind = nil
-				end
-			end
-
-			if Settings.ConfigurationSaving then
-				if Settings.ConfigurationSaving.Enabled and KeybindSettings.Flag then
-					RayfieldLibrary.Flags[KeybindSettings.Flag] = KeybindSettings
 				end
 			end
 
@@ -3249,9 +3094,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 					TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
 				end
 
-				if not ToggleSettings.Ext then
-					SaveConfiguration()
-				end
 			end)
 
 			function ToggleSettings:Set(NewToggleValue)
@@ -3297,9 +3139,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 					TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
 				end
 
-				if not ToggleSettings.Ext then
-					SaveConfiguration()
-				end
 			end
 
 			function ToggleSettings:Destroy()
@@ -3313,11 +3152,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 			end
 
 			if not ToggleSettings.Ext then
-				if Settings.ConfigurationSaving then
-					if Settings.ConfigurationSaving.Enabled and ToggleSettings.Flag then
-						RayfieldLibrary.Flags[ToggleSettings.Flag] = ToggleSettings
-					end
-				end
 			end
 
 
@@ -3457,9 +3291,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 							end
 
 							SliderSettings.CurrentValue = NewValue
-							if not SliderSettings.Ext then
-								SaveConfiguration()
-							end
 						end
 					else
 						TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.3, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, Location - Slider.Main.AbsolutePosition.X > 5 and Location - Slider.Main.AbsolutePosition.X or 5, 1, 0)}):Play()
@@ -3491,9 +3322,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 				end
 
 				SliderSettings.CurrentValue = NewVal
-				if not SliderSettings.Ext then
-					SaveConfiguration()
-				end
 			end
 
 			function SliderSettings:Destroy()
@@ -3503,12 +3331,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 					end
 					Slider:Destroy()
 					Slider = nil
-				end
-			end
-
-			if Settings.ConfigurationSaving then
-				if Settings.ConfigurationSaving.Enabled and SliderSettings.Flag then
-					RayfieldLibrary.Flags[SliderSettings.Flag] = SliderSettings
 				end
 			end
 
@@ -3604,34 +3426,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 	end)
 
 	if not success then warn('Rayfield had an issue creating settings.') end
-
-	if reporter and getSetting("System", "usageAnalytics") then
-		local themeName = "Default"
-		if Settings.Theme then
-			if type(Settings.Theme) == "string" then
-				themeName = Settings.Theme
-			elseif type(Settings.Theme) == "table" then
-				themeName = "Custom"
-			end
-		end
-
-		local discordInvite = nil
-		if Settings.Discord and Settings.Discord.Enabled and Settings.Discord.Invite and Settings.Discord.Invite ~= "" then
-			local raw = tostring(Settings.Discord.Invite)
-			discordInvite = (raw:match("discord%.gg/([%w%-]+)") or raw:match("discord%.com/invite/([%w%-]+)") or raw):sub(1, 32)
-		end
-
-		reporter:windowCreated({
-			script_name       = Settings.Name or "Unknown",
-			script_version    = Release,
-			interface_version = InterfaceBuild,
-			theme             = themeName,
-			is_mobile         = useMobileSizing and true or false,
-			has_key_system    = Settings.KeySystem and true or false,
-			discord_invite    = discordInvite,
-			config_saving     = (Settings.ConfigurationSaving and Settings.ConfigurationSaving.Enabled) and true or false,
-		})
-	end
 
 	return Window
 end
@@ -3772,67 +3566,5 @@ for _, TopbarButton in ipairs(Topbar:GetChildren()) do
 		end)
 	end
 end
-
-
-function RayfieldLibrary:LoadConfiguration()
-	local config
-
-	if useStudio then
-		config = [[{"Toggle1adwawd":true,"ColorPicker1awd":{"B":255,"G":255,"R":255},"Slider1dawd":100,"ColorPicfsefker1":{"B":255,"G":255,"R":255},"Slidefefsr1":80,"dawdawd":"","Input1":"hh","Keybind1":"B","Dropdown1":["Ocean"]}]]
-	end
-
-	if CEnabled then
-		local notified
-		local loaded
-
-		local success, result = pcall(function()
-			if useStudio and config then
-				loaded = LoadConfiguration(config)
-				return
-			end
-
-			if isfile then 
-				if callSafely(isfile, ConfigurationFolder .. "/" .. CFileName .. ConfigurationExtension) then
-					loaded = LoadConfiguration(callSafely(readfile, ConfigurationFolder .. "/" .. CFileName .. ConfigurationExtension))
-				end
-			else
-				notified = true
-				RayfieldLibrary:Notify({Title = "Rayfield Configurations", Content = "We couldn't enable Configuration Saving as you are not using software with filesystem support.", Image = 4384402990})
-			end
-		end)
-
-		if success and loaded and not notified then
-			RayfieldLibrary:Notify({Title = "Rayfield Configurations", Content = "The configuration file for this script has been loaded from a previous session.", Image = 4384403532})
-		elseif not success and not notified then
-			warn('Rayfield Configurations Error | '..tostring(result))
-			RayfieldLibrary:Notify({Title = "Rayfield Configurations", Content = "We've encountered an issue loading your configuration correctly.\n\nCheck the Developer Console for more information.", Image = 4384402990})
-		end
-	end
-
-	globalLoaded = true
-end
-
-
-if CEnabled and Main:FindFirstChild('Notice') then
-	Main.Notice.BackgroundTransparency = 1
-	Main.Notice.Title.TextTransparency = 1
-	Main.Notice.Size = UDim2.new(0, 0, 0, 0)
-	Main.Notice.Position = UDim2.new(0.5, 0, 0, -100)
-	Main.Notice.Visible = true
-
-	TweenService:Create(Main.Notice, TweenInfo.new(0.5, Enum.EasingStyle.Exponential, Enum.EasingDirection.InOut), {Size = UDim2.new(0, 280, 0, 35), Position = UDim2.new(0.5, 0, 0, -50), BackgroundTransparency = 0.5}):Play()
-	TweenService:Create(Main.Notice.Title, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {TextTransparency = 0.1}):Play()
-end
-
-task.delay(4, function()
-	RayfieldLibrary.LoadConfiguration()
-	if Main:FindFirstChild('Notice') and Main.Notice.Visible then
-		TweenService:Create(Main.Notice, TweenInfo.new(0.5, Enum.EasingStyle.Exponential, Enum.EasingDirection.InOut), {Size = UDim2.new(0, 100, 0, 25), Position = UDim2.new(0.5, 0, 0, -100), BackgroundTransparency = 1}):Play()
-		TweenService:Create(Main.Notice.Title, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
-
-		task.wait(0.5)
-		Main.Notice.Visible = false
-	end
-end)
 
 return RayfieldLibrary
