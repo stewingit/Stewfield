@@ -186,7 +186,7 @@ local function loadSettings()
 		-- for debug in studio
 		if useStudio then
 			file = [[
-    {"General":{"rayfieldOpen":{"Value":"K","Type":"bind","Name":"Rayfield Keybind","Element":{"HoldToInteract":false,"Ext":true,"Name":"Rayfield Keybind","Set":null,"CallOnChange":true,"Callback":null,"CurrentKeybind":"K"}}}}
+    {"General":{"rayfieldOpen":"K","rememberTab":false,"lastTab":"","theme":["Default"]}}
 ]]
 		end
 
@@ -210,8 +210,8 @@ local function loadSettings()
 			for categoryName, settingCategory in pairs(settingsTable) do
 				if file[categoryName] then
 					for settingName, setting in pairs(settingCategory) do
-						if file[categoryName][settingName] then
-							setting.Value = file[categoryName][settingName].Value
+						if file[categoryName][settingName] ~= nil then
+							setting.Value = file[categoryName][settingName]
 							if setting.Element and setting.Element.Set then
 								setting.Element:Set(getSetting(categoryName, settingName))
 							end
@@ -1618,8 +1618,17 @@ local function saveSettings() -- Save settings to file
 			end
 		end
 		
+		-- Create a clean table for the current window to avoid saving element functions and metadata
+		local cleanSettings = {}
+		for categoryName, settingCategory in pairs(settingsTable) do
+			cleanSettings[categoryName] = {}
+			for settingName, setting in pairs(settingCategory) do
+				cleanSettings[categoryName][settingName] = setting.Value
+			end
+		end
+
 		-- Append/Update the current window's settings
-		globalSettings[currentWindowName] = settingsTable
+		globalSettings[currentWindowName] = cleanSettings
 		encoded = HttpService:JSONEncode(globalSettings)
 	end)
 
