@@ -101,12 +101,11 @@ local function secureNotify(wType, title, content)
 		})
 	end)
 end
-local InterfaceBuild = 'UU2NX'
-local Release = "Build 1.746"
+
 local RayfieldFolder = "Rayfield"
 local ConfigurationFolder = RayfieldFolder.."/Configurations"
 local ConfigurationExtension = ".rfld"
-local currentWindowName = "Default"
+local currentConfigId = "Default"
 local settingsTable = {
     General = {
         rayfieldOpen = {Type = 'bind', Value = 'K', Name = 'Rayfield Keybind'},
@@ -175,11 +174,11 @@ local function loadSettings()
 	local success, result =	pcall(function()
 		if callSafely(isfolder, RayfieldFolder) then
 			if callSafely(isfile, RayfieldFolder..'/GlobalSettings'..ConfigurationExtension) then
-				local rawFile = callSafely(readfile, RayfieldFolder..'/GlobalSettings'..ConfigurationExtension)
-				local decodeSuccess, decodedGlobal = pcall(function() return HttpService:JSONDecode(rawFile) end)
-				if decodeSuccess and type(decodedGlobal) == "table" and decodedGlobal[currentWindowName] then
-					file = decodedGlobal[currentWindowName]
-				end
+local rawFile = callSafely(readfile, RayfieldFolder..'/GlobalSettings'..ConfigurationExtension)
+local decodeSuccess, decodedGlobal = pcall(function() return HttpService:JSONDecode(rawFile) end)
+if decodeSuccess and type(decodedGlobal) == "table" and decodedGlobal[currentConfigId] then
+    file = decodedGlobal[currentConfigId]
+end
 			end
 		end
 
@@ -206,13 +205,12 @@ local function loadSettings()
 			return
 		end
 
-		if next(file) ~= nil and file[currentWindowName] then
-			local windowSettings = file[currentWindowName] -- Access the specific window's data
+		if next(file) ~= nil then
 			for categoryName, settingCategory in pairs(settingsTable) do
-				if windowSettings[categoryName] then
+				if file[categoryName] then
 					for settingName, setting in pairs(settingCategory) do
-						if windowSettings[categoryName][settingName] ~= nil then
-							setting.Value = windowSettings[categoryName][settingName]
+						if file[categoryName][settingName] ~= nil then
+							setting.Value = file[categoryName][settingName]
 							if setting.Element and setting.Element.Set then
 								setting.Element:Set(getSetting(categoryName, settingName))
 							end
@@ -1628,9 +1626,9 @@ local function saveSettings() -- Save settings to file
 			end
 		end
 
-		-- Append/Update the current window's settings
-		globalSettings[currentWindowName] = cleanSettings
-		encoded = HttpService:JSONEncode(globalSettings)
+-- Append/Update the current window's settings
+globalSettings[currentConfigId] = cleanSettings
+encoded = HttpService:JSONEncode(globalSettings)
 	end)
 
 	if success then
@@ -1849,14 +1847,15 @@ function RayfieldLibrary:CreateWindow(Settings)
 		end
 
 		CFileName = Settings.ConfigurationSaving.FileName
-		ConfigurationFolder = Settings.ConfigurationSaving.FolderName or ConfigurationFolder
-		CEnabled = Settings.ConfigurationSaving.Enabled
-		
-		currentWindowName = Settings.Name or "Default"
+ConfigurationFolder = Settings.ConfigurationSaving.FolderName or ConfigurationFolder
+CEnabled = Settings.ConfigurationSaving.Enabled
 
-		if Settings.ConfigurationSaving.Enabled then
-			ensureFolder(ConfigurationFolder)
-		end
+-- Prioritize ConfigurationId, fallback to Name if not provided
+currentConfigId = Settings.ConfigurationId or Settings.Name or "Default"
+
+if Settings.ConfigurationSaving.Enabled then
+    ensureFolder(ConfigurationFolder)
+end
 	end)
 
 	-- NEW: Reload settings now that we have the proper script-specific file name
