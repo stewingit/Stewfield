@@ -110,7 +110,7 @@ local currentSettingsName = "DefaultSettings"
 local settingsTable = {
     General = {
         rayfieldOpen = {Type = 'bind', Value = 'K', Name = 'Rayfield Keybind'},
-        rememberTab = {Type = 'toggle', Value = false, Name = 'Remember Previous Tab'},
+        rememberTab = {Type = 'toggle', Value = true, Name = 'Remember Previous Tab'},
         lastTab = {Type = 'hidden', Value = ''},
         theme = {Type = 'dropdown', Value = {'Default'}, Name = 'Interface Theme', Options = {'Default', 'Ocean', 'AmberGlow', 'Light', 'Amethyst', 'Green', 'Bloom', 'DarkBlue', 'Serenity'}}
     }
