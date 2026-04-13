@@ -105,7 +105,7 @@ local currentSettingsName = "DefaultSettings"
 local settingsTable = {
 	General = {
 		rayfieldOpen = {Type = 'bind', Value = 'K', Name = 'Rayfield Keybind'},
-		rememberTab = {Type = 'toggle', Value = true, Name = 'Remember Previous Tab'},
+		rememberTab = {Type = 'toggle', Value = false, Name = 'Remember Previous Tab'},
 		lastTab = {Type = 'hidden', Value = ''},
 		theme = {Type = 'dropdown', Value = {'Default'}, Name = 'Interface Theme', Options = {'Default', 'Ocean', 'AmberGlow', 'Light', 'Amethyst', 'Green', 'Bloom', 'DarkBlue', 'Serenity'}},
 		searchType = {Type = 'dropdown', Value = {'Elements'}, Name = 'Search Through', Options = {'Tabs', 'Elements'}}
@@ -1926,14 +1926,12 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 		TabPage.Parent = Elements
 		
-		local isTargetTab = false
+	local isTargetTab = false
 		local shouldRemember = getSetting("General", "rememberTab")
 		local savedTab = getSetting("General", "lastTab")
 		
-		if shouldRemember and type(savedTab) == "string" and savedTab ~= "" then
-			if Name == savedTab then
-				isTargetTab = true
-			end
+		if shouldRemember and type(savedTab) == "string" and savedTab ~= "" and Name == savedTab then
+			isTargetTab = true
 		elseif not FirstTab then
 			isTargetTab = true
 		end
