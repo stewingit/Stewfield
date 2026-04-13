@@ -108,7 +108,7 @@ local settingsTable = {
 		rememberTab = {Type = 'toggle', Value = true, Name = 'Remember Previous Tab'},
 		lastTab = {Type = 'hidden', Value = ''},
 		theme = {Type = 'dropdown', Value = {'Default'}, Name = 'Interface Theme', Options = {'Default', 'Ocean', 'AmberGlow', 'Light', 'Amethyst', 'Green', 'Bloom', 'DarkBlue', 'Serenity'}},
-		searchType = {Type = 'dropdown', Value = {'Tabs'}, Name = 'Search Through', Options = {'Tabs', 'Elements'}}
+		searchType = {Type = 'dropdown', Value = {'Elements'}, Name = 'Search Through', Options = {'Tabs', 'Elements'}}
 	}
 }
 
@@ -1080,7 +1080,7 @@ local function openSearch()
 				local tabName = tabbtn.Name
 				local btn = Elements.Template.Button:Clone()
 				btn.Name = tabName
-				btn.Title.Text = tostring("Go to tab: " .. tabName)
+				btn.Title.Text = tostring(tabName)
 				btn.Visible = true
 				btn.Parent = searchTab
 				
