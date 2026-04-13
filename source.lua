@@ -2031,6 +2031,11 @@ function RayfieldLibrary:CreateWindow(Settings)
 			TweenService:Create(Button.Title, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()	
 
 			Button.Interact.MouseButton1Click:Connect(function()
+				-- Close the search UI if it is currently open
+				if searchOpen then
+					task.spawn(closeSearch)
+				end
+
 				local Success, Response = pcall(ButtonSettings.Callback)
 				if rayfieldDestroyed then
 					return
@@ -3562,15 +3567,16 @@ Main.Search.Input:GetPropertyChangedSignal('Text'):Connect(function()
 						element.Visible = true
 					else
 						local foundMatch = false
-						-- Scan all text inside the element
-						for _, descendant in ipairs(element:GetDescendants()) do
-							if descendant:IsA("TextLabel") or descendant:IsA("TextBox") or descendant:IsA("TextButton") then
-								if descendant.Text and string.find(string.lower(descendant.Text), searchText, 1, true) then
-									foundMatch = true
-									break
-								end
-							end
+						-- Strictly check the Title (and Content for paragraphs) to avoid utility labels
+						local elementTitle = element:FindFirstChild("Title")
+						local elementContent = element:FindFirstChild("Content")
+						
+						if elementTitle and elementTitle:IsA("TextLabel") and elementTitle.Text and string.find(string.lower(elementTitle.Text), searchText, 1, true) then
+							foundMatch = true
+						elseif elementContent and elementContent:IsA("TextLabel") and elementContent.Text and string.find(string.lower(elementContent.Text), searchText, 1, true) then
+							foundMatch = true
 						end
+						
 						element.Visible = foundMatch
 					end
 				end
