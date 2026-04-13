@@ -2960,8 +2960,21 @@ function RayfieldLibrary:CreateWindow(Settings)
 			end)
 			Keybind.KeybindFrame.KeybindBox.FocusLost:Connect(function()
 				CheckingForKey = false
-				if Keybind.KeybindFrame.KeybindBox.Text == nil or Keybind.KeybindFrame.KeybindBox.Text == "" then
+				local newText = Keybind.KeybindFrame.KeybindBox.Text
+				if newText == nil or newText == "" then
 					Keybind.KeybindFrame.KeybindBox.Text = tostring(KeybindSettings.CurrentKeybind or "")
+				else
+					-- Check if what they typed is actually a valid KeyCode
+					local isValidKey = pcall(function() return Enum.KeyCode[newText] end)
+					if isValidKey then
+						KeybindSettings.CurrentKeybind = tostring(newText)
+						if KeybindSettings.CallOnChange then
+							KeybindSettings.Callback(tostring(newText))
+						end
+					else
+						-- Revert to the last working key if they typed nonsense
+						Keybind.KeybindFrame.KeybindBox.Text = tostring(KeybindSettings.CurrentKeybind or "")
+					end
 				end
 			end)
 
@@ -3611,7 +3624,7 @@ hideHotkeyConnection = UserInputService.InputBegan:Connect(function(input, proce
 	local hotkeySetting = getSetting("General", "rayfieldOpen")
 	if typeof(hotkeySetting) == "table" then hotkeySetting = hotkeySetting[1] end
 	
-	if hotkeySetting and (input.KeyCode == Enum.KeyCode[hotkeySetting]) and not processed then
+			if hotkeySetting and (input.KeyCode.Name == hotkeySetting) and not processed then
 		if Debounce then return end
 		if Hidden then
 			Hidden = false
