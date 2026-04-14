@@ -64,11 +64,11 @@ local requestsDisabled = false
 local customAssetId = nil
 local secureMode = false
 if _getgenv then
-	local ok, result = pcall(function() return _getgenv().DISABLE_RAYFIELD_REQUESTS end)
+	local ok, result = pcall(function() return _getgenv().DISABLE_STEWFIELD_REQUESTS end)
 	if ok and result then requestsDisabled = true end
-	local ok2, result2 = pcall(function() return _getgenv().RAYFIELD_ASSET_ID end)
+	local ok2, result2 = pcall(function() return _getgenv().STEWFIELD_ASSET_ID end)
 	if ok2 and type(result2) == "number" then customAssetId = result2 end
-	local ok3, result3 = pcall(function() return _getgenv().RAYFIELD_SECURE end)
+	local ok3, result3 = pcall(function() return _getgenv().STEWFIELD_SECURE end)
 	if ok3 and result3 then secureMode = true end
 end
 
@@ -88,8 +88,8 @@ local function secureNotify(wType, title, content)
 	if secureWarnings[wType] then return end
 	secureWarnings[wType] = true
 	task.spawn(function()
-		while not RayfieldLibrary or not RayfieldLibrary.Notify do task.wait(0.5) end
-		RayfieldLibrary:Notify({
+		while not StewfieldLibrary or not StewfieldLibrary.Notify do task.wait(0.5) end
+		StewfieldLibrary:Notify({
 			Title = title,
 			Content = content,
 			Duration = 8,
@@ -98,13 +98,13 @@ local function secureNotify(wType, title, content)
 end
 
 -- Settings
-local RayfieldFolder = "Rayfield"
-local ConfigurationFolder = RayfieldFolder.."/Configurations"
-local ConfigurationExtension = ".rfld"
+local StewfieldFolder = "Stewfield"
+local ConfigurationFolder = StewfieldFolder.."/Configurations"
+local ConfigurationExtension = ".stfd"
 local currentSettingsName = "DefaultSettings"
 local settingsTable = {
 	General = {
-		rayfieldOpen = {Type = 'bind', Value = 'K', Name = 'Rayfield Keybind'},
+		stewfieldOpen = {Type = 'bind', Value = 'K', Name = 'Stewfield Keybind'},
 		rememberTab = {Type = 'toggle', Value = false, Name = 'Remember Previous Tab'},
 		lastTab = {Type = 'hidden', Value = ''},
 		theme = {Type = 'dropdown', Value = {'Default'}, Name = 'Interface Theme', Options = {'Default', 'Ocean', 'AmberGlow', 'Light', 'Amethyst', 'Green', 'Bloom', 'DarkBlue', 'Serenity'}},
@@ -164,9 +164,9 @@ local function loadSettings()
 	local file = nil
 
 	local success, result =	pcall(function()
-		if callSafely(isfolder, RayfieldFolder) then
-			if callSafely(isfile, RayfieldFolder..'/'..currentSettingsName..ConfigurationExtension) then
-				file = callSafely(readfile, RayfieldFolder..'/'..currentSettingsName..ConfigurationExtension)
+		if callSafely(isfolder, StewfieldFolder) then
+			if callSafely(isfile, StewfieldFolder..'/'..currentSettingsName..ConfigurationExtension) then
+				file = callSafely(readfile, StewfieldFolder..'/'..currentSettingsName..ConfigurationExtension)
 			end
 		end
 
@@ -201,7 +201,7 @@ local function loadSettings()
 		else
 			for settingName, settingValue in overriddenSettings do
 				local split = string.split(settingName, ".")
-				assert(#split == 2, "Rayfield | Invalid overridden setting name: " .. settingName)
+				assert(#split == 2, "Stewfield | Invalid overridden setting name: " .. settingName)
 				local categoryName = split[1]
 				local settingNameOnly = split[2]
 				if settingsTable[categoryName] and settingsTable[categoryName][settingNameOnly] then
@@ -217,7 +217,7 @@ local function loadSettings()
 
 	if not success then 
 		if writefile then
-			warn('Rayfield had an issue accessing configuration saving capability.')
+			warn('Stewfield had an issue accessing configuration saving capability.')
 		end
 	end
 end
@@ -253,7 +253,7 @@ if debugX then
 end
 
 -- Themes
-local RayfieldLibrary = {
+local StewfieldLibrary = {
 	Flags = {},
 	Theme = {
 		Default = {
@@ -557,47 +557,50 @@ local RayfieldLibrary = {
 }
 
 -- UI
-local RayfieldAssetId = customAssetId or 75623004084296
+local StewfieldAssetId = customAssetId or 75623004084296
 local buildAttempts = 0
 local correctBuild = true
 local warned
 local globalLoaded
-local rayfieldDestroyed = false
-local Rayfield = useStudio and script.Parent:FindFirstChild('Rayfield') or game:GetObjects("rbxassetid://"..RayfieldAssetId)[1]
+local stewfieldDestroyed = false
+local configLoaded = false
+local Stewfield = useStudio and script.Parent:FindFirstChild('Stewfield') or game:GetObjects("rbxassetid://"..StewfieldAssetId)[1]
 
-Rayfield.Enabled = false
+if Stewfield then Stewfield.Name = "Stewfield" end
+
+Stewfield.Enabled = false
 
 if gethui then
-	Rayfield.Parent = gethui()
+	Stewfield.Parent = gethui()
 elseif syn and syn.protect_gui then 
-	syn.protect_gui(Rayfield)
-	Rayfield.Parent = CoreGui
+	syn.protect_gui(Stewfield)
+	Stewfield.Parent = CoreGui
 elseif not useStudio and CoreGui:FindFirstChild("RobloxGui") then
-	Rayfield.Parent = CoreGui:FindFirstChild("RobloxGui")
+	Stewfield.Parent = CoreGui:FindFirstChild("RobloxGui")
 elseif not useStudio then
-	Rayfield.Parent = CoreGui
+	Stewfield.Parent = CoreGui
 end
 
 if gethui then
 	for _, Interface in ipairs(gethui():GetChildren()) do
-		if Interface.Name == Rayfield.Name and Interface ~= Rayfield then
+		if Interface.Name == Stewfield.Name and Interface ~= Stewfield then
 			Interface.Enabled = false
-			Interface.Name = "Rayfield-Old"
+			Interface.Name = "Stewfield-Old"
 		end
 	end
 elseif not useStudio then
 	for _, Interface in ipairs(CoreGui:GetChildren()) do
-		if Interface.Name == Rayfield.Name and Interface ~= Rayfield then
+		if Interface.Name == Stewfield.Name and Interface ~= Stewfield then
 			Interface.Enabled = false
-			Interface.Name = "Rayfield-Old"
+			Interface.Name = "Stewfield-Old"
 		end
 	end
 end
 
-Rayfield.Enabled = true 
+Stewfield.Enabled = true 
 
 do
-	local AssetPath = RayfieldFolder.."/Assets"
+	local AssetPath = StewfieldFolder.."/Assets"
 	local AssetBaseURL = "https://github.com/stewingit/stewfield/blob/main/assets/"
 
 	local assetFiles = {
@@ -637,17 +640,17 @@ do
 				return nil
 			end
 
-if nextMissing() then
-    local Main = Rayfield.Main
-    local LoadingFrame = Main.LoadingFrame
-    
-    Main.Size = UDim2.new(0, 420, 0, 100)
-    Main.Visible = true
-    Main.BackgroundTransparency = 0
-    Main.BackgroundColor3 = Color3.fromRGB(25, 25, 25) 
-    if Main:FindFirstChild('Shadow') then
-        Main.Shadow.Image.ImageTransparency = 0.6
-    end
+			if nextMissing() then
+				local Main = Stewfield.Main
+				local LoadingFrame = Main.LoadingFrame
+				
+				Main.Size = UDim2.new(0, 420, 0, 100)
+				Main.Visible = true
+				Main.BackgroundTransparency = 0
+				Main.BackgroundColor3 = Color3.fromRGB(25, 25, 25) 
+				if Main:FindFirstChild('Shadow') then
+					Main.Shadow.Image.ImageTransparency = 0.6
+				end
 				
 				LoadingFrame.Title.TextTransparency = 0
 				LoadingFrame.Subtitle.TextTransparency = 0
@@ -656,28 +659,30 @@ if nextMissing() then
 				LoadingFrame.Subtitle.Text = "Downloading Assets..."
 				LoadingFrame.Visible = true
 
-    task.spawn(function()
-        while true do
-            local id = nextMissing()
-            if not id then break end
-            local success, err = pcall(function()
-                local response = requestFunc({Url = assetFiles[id], Method = "GET"})
-                writefile(AssetPath.."/"..tostring(id)..".png", response.Body)
-            end)
-            
-            if not success then
-                warn("Stewfield | Failed to download asset: " .. tostring(id))
-                pcall(writefile, AssetPath.."/"..tostring(id)..".png", "") 
-            end
-            
-            task.wait()
-        end
-    end)
+				task.spawn(function()
+					while true do
+						local id = nextMissing()
+						if not id then break end
+						local success, err = pcall(function()
+							local response = requestFunc({Url = assetFiles[id], Method = "GET"})
+							writefile(AssetPath.."/"..tostring(id)..".png", response.Body)
+						end)
+						
+						if not success then
+							warn("Stewfield | Failed to download asset: " .. tostring(id))
+							pcall(writefile, AssetPath.."/"..tostring(id)..".png", "") 
+						end
+						
+						task.wait()
+					end
+				end)
 
 				while nextMissing() do
 					task.wait(0.1)
 				end
 				
+				-- Ensure the loading frame maintains seamless transition for LoadConfiguration
+				LoadingFrame.Subtitle.Text = "Loading..."
 				LoadingFrame.Visible = false
 				Main.Visible = false
 			end
@@ -694,40 +699,40 @@ if nextMissing() then
 
 		if not ok then
 			warn("Stewfield | Failed to load custom assets: "..tostring(err))
-			secureNotify("asset_load_fail", "Rayfield", "Failed to load custom assets. UI images may not display correctly.")
+			secureNotify("asset_load_fail", "Stewfield", "Failed to load custom assets. UI images may not display correctly.")
 		end
 	else
-		secureNotify("no_getcustomasset", "Rayfield", "Your executor does not support getcustomasset. Some UI images may not render correctly.")
+		secureNotify("no_getcustomasset", "Stewfield", "Your executor does not support getcustomasset. Some UI images may not render correctly.")
 	end
 
-	Rayfield.Main.Shadow.Image.Image = customAssets["line3"]
-	Rayfield.Main.Topbar.Hide.Image = customAssets["close"]
-	Rayfield.Main.Topbar.ChangeSize.Image = customAssets["minimise"]
-	Rayfield.Main.Topbar.Settings.Image = customAssets["settings"]
-	Rayfield.Main.Topbar.Icon.Image = customAssets["arrow"]
-	Rayfield.Main.Topbar.Search.Image = customAssets["search"]
-	Rayfield.Main.Topbar.Search.ImageRectOffset = Vector2.new(0, 0)
-	Rayfield.Main.Topbar.Search.ImageRectSize = Vector2.new(0, 0)
-	Rayfield.Main.Elements.Template.Toggle.Switch.Shadow.Image = customAssets["line2"]
-	Rayfield.Main.Elements.Template.Slider.Main.Shadow.Image = customAssets["line2"]
-	Rayfield.Main.Elements.Template.Dropdown.Toggle.Image = customAssets["up"]
-	Rayfield.Main.Elements.Template.Dropdown.Toggle.ImageRectOffset = Vector2.new(0, 0)
-	Rayfield.Main.Elements.Template.Dropdown.Toggle.ImageRectSize = Vector2.new(0, 0)
-	Rayfield.Main.Elements.Template.Label.Icon.Image = customAssets["warning"]
-	Rayfield.Main.Elements.Template.ColorPicker.CPBackground.MainCP.Image = customAssets["blank"]
-	Rayfield.Main.Elements.Template.ColorPicker.CPBackground.MainCP.MainPoint.Image = customAssets["dot"]
-	Rayfield.Main.Elements.Template.ColorPicker.ColorSlider.SliderPoint.Image = customAssets["dot"]
-	Rayfield.Main.TabList.Template.Image.Image = customAssets["cube"]
-	Rayfield.Main.Search.Search.Image = customAssets["search"]
-	Rayfield.Main.Search.Shadow.Image = customAssets["line3"]
-	Rayfield.Notifications.Template.Icon.Image = customAssets["warning"]
-	Rayfield.Notifications.Template.Shadow.Image = customAssets["line"]
+	Stewfield.Main.Shadow.Image.Image = customAssets["line3"]
+	Stewfield.Main.Topbar.Hide.Image = customAssets["close"]
+	Stewfield.Main.Topbar.ChangeSize.Image = customAssets["minimise"]
+	Stewfield.Main.Topbar.Settings.Image = customAssets["settings"]
+	Stewfield.Main.Topbar.Icon.Image = customAssets["arrow"]
+	Stewfield.Main.Topbar.Search.Image = customAssets["search"]
+	Stewfield.Main.Topbar.Search.ImageRectOffset = Vector2.new(0, 0)
+	Stewfield.Main.Topbar.Search.ImageRectSize = Vector2.new(0, 0)
+	Stewfield.Main.Elements.Template.Toggle.Switch.Shadow.Image = customAssets["line2"]
+	Stewfield.Main.Elements.Template.Slider.Main.Shadow.Image = customAssets["line2"]
+	Stewfield.Main.Elements.Template.Dropdown.Toggle.Image = customAssets["up"]
+	Stewfield.Main.Elements.Template.Dropdown.Toggle.ImageRectOffset = Vector2.new(0, 0)
+	Stewfield.Main.Elements.Template.Dropdown.Toggle.ImageRectSize = Vector2.new(0, 0)
+	Stewfield.Main.Elements.Template.Label.Icon.Image = customAssets["warning"]
+	Stewfield.Main.Elements.Template.ColorPicker.CPBackground.MainCP.Image = customAssets["blank"]
+	Stewfield.Main.Elements.Template.ColorPicker.CPBackground.MainCP.MainPoint.Image = customAssets["dot"]
+	Stewfield.Main.Elements.Template.ColorPicker.ColorSlider.SliderPoint.Image = customAssets["dot"]
+	Stewfield.Main.TabList.Template.Image.Image = customAssets["cube"]
+	Stewfield.Main.Search.Search.Image = customAssets["search"]
+	Stewfield.Main.Search.Shadow.Image = customAssets["line3"]
+	Stewfield.Notifications.Template.Icon.Image = customAssets["warning"]
+	Stewfield.Notifications.Template.Shadow.Image = customAssets["line"]
 end
 
 local minSize = Vector2.new(1024, 768)
 local useMobileSizing
 
-if Rayfield.AbsoluteSize.X < minSize.X and Rayfield.AbsoluteSize.Y < minSize.Y then
+if Stewfield.AbsoluteSize.X < minSize.X and Stewfield.AbsoluteSize.Y < minSize.Y then
 	useMobileSizing = true
 end
 
@@ -737,20 +742,20 @@ if UserInputService.TouchEnabled then
 end
 
 -- Variables
-local Main = Rayfield.Main
-local MPrompt = Rayfield:FindFirstChild('Prompt')
+local Main = Stewfield.Main
+local MPrompt = Stewfield:FindFirstChild('Prompt')
 local Topbar = Main.Topbar
 local Elements = Main.Elements
 local LoadingFrame = Main.LoadingFrame
 local TabList = Main.TabList
-local dragBar = Rayfield:FindFirstChild('Drag')
+local dragBar = Stewfield:FindFirstChild('Drag')
 local dragInteract = dragBar and dragBar.Interact or nil
 local dragBarCosmetic = dragBar and dragBar.Drag or nil
 
 local dragOffset = 255
 local dragOffsetMobile = 150
 
-Rayfield.DisplayOrder = 100
+Stewfield.DisplayOrder = 100
 LoadingFrame.Visible = false
 LoadingFrame.Version.Text = tostring(Release or "Stewfield")
 
@@ -760,30 +765,30 @@ local Minimised = false
 local Hidden = false
 local Debounce = false
 local searchOpen = false
-local Notifications = Rayfield.Notifications
+local Notifications = Stewfield.Notifications
 local keybindConnections = {}
 
-local SelectedTheme = RayfieldLibrary.Theme.Default
+local SelectedTheme = StewfieldLibrary.Theme.Default
 
 -- Theming
 local function ChangeTheme(Theme)
 	if typeof(Theme) == 'string' then
-		SelectedTheme = RayfieldLibrary.Theme[Theme]
+		SelectedTheme = StewfieldLibrary.Theme[Theme]
 	elseif typeof(Theme) == 'table' then
 		SelectedTheme = Theme
 	end
 
-	Rayfield.Main.BackgroundColor3 = SelectedTheme.Background
-	Rayfield.Main.Topbar.BackgroundColor3 = SelectedTheme.Topbar
-	Rayfield.Main.Topbar.CornerRepair.BackgroundColor3 = SelectedTheme.Topbar
-	Rayfield.Main.Shadow.Image.ImageColor3 = SelectedTheme.Shadow
+	Stewfield.Main.BackgroundColor3 = SelectedTheme.Background
+	Stewfield.Main.Topbar.BackgroundColor3 = SelectedTheme.Topbar
+	Stewfield.Main.Topbar.CornerRepair.BackgroundColor3 = SelectedTheme.Topbar
+	Stewfield.Main.Shadow.Image.ImageColor3 = SelectedTheme.Shadow
 
-	Rayfield.Main.Topbar.ChangeSize.ImageColor3 = SelectedTheme.TextColor
-	Rayfield.Main.Topbar.Hide.ImageColor3 = SelectedTheme.TextColor
-	Rayfield.Main.Topbar.Search.ImageColor3 = SelectedTheme.TextColor
+	Stewfield.Main.Topbar.ChangeSize.ImageColor3 = SelectedTheme.TextColor
+	Stewfield.Main.Topbar.Hide.ImageColor3 = SelectedTheme.TextColor
+	Stewfield.Main.Topbar.Search.ImageColor3 = SelectedTheme.TextColor
 	if Topbar:FindFirstChild('Settings') then
-		Rayfield.Main.Topbar.Settings.ImageColor3 = SelectedTheme.TextColor
-		Rayfield.Main.Topbar.Divider.BackgroundColor3 = SelectedTheme.ElementStroke
+		Stewfield.Main.Topbar.Settings.ImageColor3 = SelectedTheme.TextColor
+		Stewfield.Main.Topbar.Divider.BackgroundColor3 = SelectedTheme.ElementStroke
 	end
 
 	Main.Search.BackgroundColor3 = SelectedTheme.TextColor
@@ -796,7 +801,7 @@ local function ChangeTheme(Theme)
 		Main.Notice.BackgroundColor3 = SelectedTheme.Background
 	end
 
-	for _, text in ipairs(Rayfield:GetDescendants()) do
+	for _, text in ipairs(Stewfield:GetDescendants()) do
 		if text.Parent.Parent ~= Notifications then
 			if text:IsA('TextLabel') or text:IsA('TextBox') then text.TextColor3 = SelectedTheme.TextColor end
 		end
@@ -967,7 +972,7 @@ local function UnpackColor(Color)
 end
 
 -- Notifications
-function RayfieldLibrary:Notify(data)
+function StewfieldLibrary:Notify(data)
 	task.spawn(function()
 		local newNotification = Notifications.Template:Clone()
 		newNotification.Name = tostring(data.Title or 'No Title Provided')
@@ -1080,7 +1085,7 @@ local function openSearch()
 		end
 
 		for _, tabbtn in ipairs(TabList:GetChildren()) do
-			if tabbtn.ClassName == "Frame" and tabbtn.Name ~= "Placeholder" and tabbtn.Name ~= "Template" and tabbtn.Name ~= "Rayfield Settings" then
+			if tabbtn.ClassName == "Frame" and tabbtn.Name ~= "Placeholder" and tabbtn.Name ~= "Template" and tabbtn.Name ~= "Stewfield Settings" then
 				local tabName = tabbtn.Name
 				local btn = Elements.Template.Button:Clone()
 				btn.Name = tabName
@@ -1277,9 +1282,9 @@ local function Hide(notify: boolean?)
 	Debounce = true
 	if notify then
 		if useMobilePrompt then 
-			RayfieldLibrary:Notify({Title = "Interface Hidden", Content = "The interface has been hidden, you can unhide the interface by tapping 'Show'.", Duration = 3, Image = 4400697855})
+			StewfieldLibrary:Notify({Title = "Interface Hidden", Content = "The interface has been hidden, you can unhide the interface by tapping 'Show'.", Duration = 3, Image = 4400697855})
 		else
-			RayfieldLibrary:Notify({Title = "Interface Hidden", Content = "The interface has been hidden, you can unhide the interface by tapping " .. tostring(getSetting("General", "rayfieldOpen")) .. ".", Duration = 3, Image = 4400697855})
+			StewfieldLibrary:Notify({Title = "Interface Hidden", Content = "The interface has been hidden, you can unhide the interface by tapping " .. tostring(getSetting("General", "stewfieldOpen")) .. ".", Duration = 3, Image = 4400697855})
 		end
 	end
 
@@ -1444,7 +1449,7 @@ local function saveSettings()
 		if useStudio and script.Parent and script.Parent:FindFirstChild('get.val') then
 			script.Parent['get.val'].Value = encoded
 		end
-		callSafely(writefile, RayfieldFolder..'/'..currentSettingsName..ConfigurationExtension, encoded)
+		callSafely(writefile, StewfieldFolder..'/'..currentSettingsName..ConfigurationExtension, encoded)
 	end
 end
 
@@ -1465,14 +1470,14 @@ local function createSettings(window)
 		return
 	end
 
-	local newTab = window:CreateTab('Rayfield Settings', 0, true)
+	local newTab = window:CreateTab('Stewfield Settings', 0, true)
 
-	if TabList['Rayfield Settings'] then
-		TabList['Rayfield Settings'].LayoutOrder = 1000
+	if TabList['Stewfield Settings'] then
+		TabList['Stewfield Settings'].LayoutOrder = 1000
 	end
 
-	if Elements['Rayfield Settings'] then
-		Elements['Rayfield Settings'].LayoutOrder = 1000
+	if Elements['Stewfield Settings'] then
+		Elements['Stewfield Settings'].LayoutOrder = 1000
 	end
 
 	for categoryName, settingCategory in pairs(settingsTable) do
@@ -1550,15 +1555,15 @@ local function fadeOutKeyUI(KeyMain)
 end
 
 -- Window
-function RayfieldLibrary:CreateWindow(Settings)
-	if Rayfield:FindFirstChild('Loading') then
-		if getgenv and not getgenv().rayfieldCached then
-			Rayfield.Enabled = true
-			Rayfield.Loading.Visible = false
+function StewfieldLibrary:CreateWindow(Settings)
+	if Stewfield:FindFirstChild('Loading') then
+		if getgenv and not getgenv().stewfieldCached then
+			Stewfield.Enabled = true
+			Stewfield.Loading.Visible = false
 		end
 	end
 
-	if getgenv then getgenv().rayfieldCached = true end
+	if getgenv then getgenv().stewfieldCached = true end
 
 	if Settings.ToggleUIKeybind then
 		local keybind = Settings.ToggleUIKeybind
@@ -1567,16 +1572,16 @@ function RayfieldLibrary:CreateWindow(Settings)
 			assert(pcall(function()
 				return Enum.KeyCode[keybind]
 			end), "ToggleUIKeybind must be a valid KeyCode")
-			overrideSetting("General", "rayfieldOpen", keybind)
+			overrideSetting("General", "stewfieldOpen", keybind)
 		elseif typeof(keybind) == "EnumItem" then
 			assert(keybind.EnumType == Enum.KeyCode, "ToggleUIKeybind must be a KeyCode enum")
-			overrideSetting("General", "rayfieldOpen", keybind.Name)
+			overrideSetting("General", "stewfieldOpen", keybind.Name)
 		else
 			error("ToggleUIKeybind must be a string or KeyCode enum")
 		end
 	end
 
-	ensureFolder(RayfieldFolder)
+	ensureFolder(StewfieldFolder)
 
 	local Passthrough = false
 	Topbar.Title.Text = tostring(Settings.Name or "")
@@ -1670,9 +1675,9 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 	-- Discord
 	if Settings.Discord and Settings.Discord.Enabled and not useStudio and not secureMode then
-		ensureFolder(RayfieldFolder.."/Discord Invites")
+		ensureFolder(StewfieldFolder.."/Discord Invites")
 
-		if not callSafely(isfile, RayfieldFolder.."/Discord Invites".."/"..Settings.Discord.Invite..ConfigurationExtension) then
+		if not callSafely(isfile, StewfieldFolder.."/Discord Invites".."/"..Settings.Discord.Invite..ConfigurationExtension) then
 			if requestFunc then
 				pcall(function()
 					requestFunc({
@@ -1692,7 +1697,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 			end
 
 			if Settings.Discord.RememberJoins then
-				callSafely(writefile, RayfieldFolder.."/Discord Invites".."/"..Settings.Discord.Invite..ConfigurationExtension,"Rayfield RememberJoins is true for this invite, this invite will not ask you to join again")
+				callSafely(writefile, StewfieldFolder.."/Discord Invites".."/"..Settings.Discord.Invite..ConfigurationExtension,"Stewfield RememberJoins is true for this invite, this invite will not ask you to join again")
 			end
 		end
 	end
@@ -1704,7 +1709,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 			return
 		end
 
-		ensureFolder(RayfieldFolder.."/Key System")
+		ensureFolder(StewfieldFolder.."/Key System")
 
 		if typeof(Settings.KeySettings.Key) == "string" then Settings.KeySettings.Key = {Settings.KeySettings.Key} end
 
@@ -1715,8 +1720,8 @@ function RayfieldLibrary:CreateWindow(Settings)
 					Settings.KeySettings.Key[i] = string.gsub(Settings.KeySettings.Key[i], " ", "")
 				end)
 				if not Success then
-					print("Rayfield | "..Key.." Error " ..tostring(Response))
-					warn('Check docs.sirius.menu for help with Rayfield specific development.')
+					print("Stewfield | "..Key.." Error " ..tostring(Response))
+					warn('Check docs.sirius.menu for help with Stewfield specific development.')
 				end
 			end
 		end
@@ -1725,9 +1730,9 @@ function RayfieldLibrary:CreateWindow(Settings)
 			Settings.KeySettings.FileName = "No file name specified"
 		end
 
-		if callSafely(isfile, RayfieldFolder.."/Key System".."/"..Settings.KeySettings.FileName..ConfigurationExtension) then
+		if callSafely(isfile, StewfieldFolder.."/Key System".."/"..Settings.KeySettings.FileName..ConfigurationExtension) then
 			for _, MKey in ipairs(Settings.KeySettings.Key) do
-				local savedKeys = callSafely(readfile, RayfieldFolder.."/Key System".."/"..Settings.KeySettings.FileName..ConfigurationExtension)
+				local savedKeys = callSafely(readfile, StewfieldFolder.."/Key System".."/"..Settings.KeySettings.FileName..ConfigurationExtension)
 				if savedKeys and string.find(savedKeys, MKey) then
 					Passthrough = true
 				end
@@ -1736,13 +1741,13 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 		if not Passthrough and secureMode then
 			warn("Stewfield | Secure Mode: Key system requires a valid saved key. The key UI cannot be shown as it requires loading detectable assets.")
-			Rayfield.Enabled = false
-			return RayfieldLibrary
+			Stewfield.Enabled = false
+			return StewfieldLibrary
 		end
 
 		if not Passthrough then
 			local AttemptsRemaining = Settings.KeySettings.MaxAttempts or 5
-			Rayfield.Enabled = false
+			Stewfield.Enabled = false
 			local KeyUI = useStudio and script.Parent:FindFirstChild('Key') or game:GetObjects("rbxassetid://11380036235")[1]
 
 			KeyUI.Enabled = true
@@ -1825,8 +1830,8 @@ function RayfieldLibrary:CreateWindow(Settings)
 					Passthrough = true
 					KeyMain.Visible = false
 					if Settings.KeySettings.SaveKey then
-						callSafely(writefile, RayfieldFolder.."/Key System".."/"..Settings.KeySettings.FileName..ConfigurationExtension, FoundKey)
-						RayfieldLibrary:Notify({Title = "Key System", Content = "The key for this script has been saved successfully.", Image = 3605522284})
+						callSafely(writefile, StewfieldFolder.."/Key System".."/"..Settings.KeySettings.FileName..ConfigurationExtension, FoundKey)
+						StewfieldLibrary:Notify({Title = "Key System", Content = "The key for this script has been saved successfully.", Image = 3605522284})
 					end
 				else
 					if AttemptsRemaining == 0 then
@@ -1851,7 +1856,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 				fadeOutKeyUI(KeyMain)
 				task.wait(0.51)
 				Passthrough = true
-				RayfieldLibrary:Destroy()
+				StewfieldLibrary:Destroy()
 				KeyUI:Destroy()
 			end)
 		else
@@ -1860,22 +1865,26 @@ function RayfieldLibrary:CreateWindow(Settings)
 	end
 	if Settings.KeySystem then
 		repeat task.wait() until Passthrough
-		if rayfieldDestroyed then return end
+		if stewfieldDestroyed then return end
 	end
 
 	Notifications.Template.Visible = false
 	Notifications.Visible = true
-	Rayfield.Enabled = true
+	Stewfield.Enabled = true
 
 	task.wait(0.5)
-	TweenService:Create(Main, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-	TweenService:Create(Main.Shadow.Image, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {ImageTransparency = 0.6}):Play()
-	task.wait(0.1)
-	TweenService:Create(LoadingFrame.Title, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
-	task.wait(0.05)
-	TweenService:Create(LoadingFrame.Subtitle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
-	task.wait(0.05)
-	TweenService:Create(LoadingFrame.Version, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
+	
+	-- Loading Issue Fix: Ensures we don't fade the loading elements back in if LoadConfiguration has been called
+	if not configLoaded then
+		TweenService:Create(Main, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
+		TweenService:Create(Main.Shadow.Image, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {ImageTransparency = 0.6}):Play()
+		task.wait(0.1)
+		TweenService:Create(LoadingFrame.Title, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
+		task.wait(0.05)
+		TweenService:Create(LoadingFrame.Subtitle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
+		task.wait(0.05)
+		TweenService:Create(LoadingFrame.Version, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
+	end
 
 	Elements.Template.LayoutOrder = 100000
 	Elements.Template.Visible = false
@@ -2052,7 +2061,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 				end
 
 				local Success, Response = pcall(ButtonSettings.Callback)
-				if rayfieldDestroyed then
+				if stewfieldDestroyed then
 					return
 				end
 				if not Success then
@@ -2060,8 +2069,8 @@ function RayfieldLibrary:CreateWindow(Settings)
 					TweenService:Create(Button.ElementIndicator, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
 					TweenService:Create(Button.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 					Button.Title.Text = "Callback Error"
-					print("Rayfield | "..tostring(ButtonSettings.Name).." Callback Error " ..tostring(Response))
-					warn('Check docs.sirius.menu for help with Rayfield specific development.')
+					print("Stewfield | "..tostring(ButtonSettings.Name).." Callback Error " ..tostring(Response))
+					warn('Check docs.sirius.menu for help with Stewfield specific development.')
 					task.wait(0.5)
 					Button.Title.Text = tostring(ButtonSettings.Name)
 					TweenService:Create(Button, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
@@ -2166,7 +2175,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 					TweenService:Create(ColorPicker.HexInput, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {Position = UDim2.new(0, 17, 0, 73)}):Play()
 					TweenService:Create(ColorPicker.Interact, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Size = UDim2.new(0.574, 0, 1, 0)}):Play()
 					TweenService:Create(Main.MainPoint, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), {ImageTransparency = 0}):Play()
-					TweenService:Create(Main, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), {ImageTransparency = SelectedTheme ~= RayfieldLibrary.Theme.Default and 0.25 or 0.1}):Play()
+					TweenService:Create(Main, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), {ImageTransparency = SelectedTheme ~= StewfieldLibrary.Theme.Default and 0.25 or 0.1}):Play()
 					TweenService:Create(Background, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
 				else
 					opened = false
@@ -2333,7 +2342,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 				TweenService:Create(ColorPicker, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
 			end)
 
-			Rayfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
+			Stewfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
 				for _, rgbinput in ipairs(ColorPicker.RGB:GetChildren()) do
 					if rgbinput:IsA("Frame") then
 						rgbinput.BackgroundColor3 = SelectedTheme.InputBackground
@@ -2474,7 +2483,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 				end
 			end
 
-			Rayfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
+			Stewfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
 				if Label then
 					Label.BackgroundColor3 = IgnoreTheme and (Color or Label.BackgroundColor3) or SelectedTheme.SecondaryElementBackground
 					Label.UIStroke.Color = IgnoreTheme and (Color or Label.BackgroundColor3) or SelectedTheme.SecondaryElementStroke
@@ -2521,7 +2530,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 				end
 			end
 
-			Rayfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
+			Stewfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
 				if Paragraph then
 					Paragraph.BackgroundColor3 = SelectedTheme.SecondaryElementBackground
 					Paragraph.UIStroke.Color = SelectedTheme.SecondaryElementStroke
@@ -2565,8 +2574,8 @@ function RayfieldLibrary:CreateWindow(Settings)
 					TweenService:Create(Input, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 					TweenService:Create(Input.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 					Input.Title.Text = "Callback Error"
-					print("Rayfield | "..tostring(InputSettings.Name).." Callback Error " ..tostring(Response))
-					warn('Check docs.sirius.menu for help with Rayfield specific development.')
+					print("Stewfield | "..tostring(InputSettings.Name).." Callback Error " ..tostring(Response))
+					warn('Check docs.sirius.menu for help with Stewfield specific development.')
 					task.wait(0.5)
 					Input.Title.Text = tostring(InputSettings.Name)
 					TweenService:Create(Input, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
@@ -2606,14 +2615,14 @@ function RayfieldLibrary:CreateWindow(Settings)
 			function InputSettings:Destroy()
 				if Input then
 					if InputSettings.Flag then
-						RayfieldLibrary.Flags[InputSettings.Flag] = nil
+						StewfieldLibrary.Flags[InputSettings.Flag] = nil
 					end
 					Input:Destroy()
 					Input = nil
 				end
 			end
 
-			Rayfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
+			Stewfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
 				if Input then
 					Input.InputFrame.BackgroundColor3 = SelectedTheme.InputBackground
 					Input.InputFrame.UIStroke.Color = SelectedTheme.InputStroke
@@ -2794,8 +2803,8 @@ function RayfieldLibrary:CreateWindow(Settings)
 							TweenService:Create(Dropdown, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 							TweenService:Create(Dropdown.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 							Dropdown.Title.Text = "Callback Error"
-							print("Rayfield | "..tostring(DropdownSettings.Name).." Callback Error " ..tostring(Response))
-							warn('Check docs.sirius.menu for help with Rayfield specific development.')
+							print("Stewfield | "..tostring(DropdownSettings.Name).." Callback Error " ..tostring(Response))
+							warn('Check docs.sirius.menu for help with Stewfield specific development.')
 							task.wait(0.5)
 							Dropdown.Title.Text = tostring(DropdownSettings.Name)
 							TweenService:Create(Dropdown, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
@@ -2825,7 +2834,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 						Debounce = false
 					end)
 
-					Rayfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
+					Stewfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
 						DropdownOption.UIStroke.Color = SelectedTheme.ElementStroke
 					end)
 				end
@@ -2840,7 +2849,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 						droption.BackgroundColor3 = SelectedTheme.DropdownSelected
 					end
 
-					Rayfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
+					Stewfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
 						if not table.find(DropdownSettings.CurrentOption, droption.Name) then
 							droption.BackgroundColor3 = SelectedTheme.DropdownUnselected
 						else
@@ -2880,8 +2889,8 @@ function RayfieldLibrary:CreateWindow(Settings)
 					TweenService:Create(Dropdown, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 					TweenService:Create(Dropdown.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 					Dropdown.Title.Text = "Callback Error"
-					print("Rayfield | "..tostring(DropdownSettings.Name).." Callback Error " ..tostring(Response))
-					warn('Check docs.sirius.menu for help with Rayfield specific development.')
+					print("Stewfield | "..tostring(DropdownSettings.Name).." Callback Error " ..tostring(Response))
+					warn('Check docs.sirius.menu for help with Stewfield specific development.')
 					task.wait(0.5)
 					Dropdown.Title.Text = tostring(DropdownSettings.Name)
 					TweenService:Create(Dropdown, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
@@ -2934,14 +2943,14 @@ function RayfieldLibrary:CreateWindow(Settings)
 			function DropdownSettings:Destroy()
 				if Dropdown then
 					if DropdownSettings.Flag then
-						RayfieldLibrary.Flags[DropdownSettings.Flag] = nil
+						StewfieldLibrary.Flags[DropdownSettings.Flag] = nil
 					end
 					Dropdown:Destroy()
 					Dropdown = nil
 				end
 			end
 
-			Rayfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
+			Stewfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
 				Dropdown.Toggle.ImageColor3 = SelectedTheme.TextColor
 				TweenService:Create(Dropdown, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
 			end)
@@ -3031,8 +3040,8 @@ function RayfieldLibrary:CreateWindow(Settings)
 							TweenService:Create(Keybind, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 							TweenService:Create(Keybind.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 							Keybind.Title.Text = "Callback Error"
-							print("Rayfield | "..tostring(KeybindSettings.Name).." Callback Error " ..tostring(Response))
-							warn('Check docs.sirius.menu for help with Rayfield specific development.')
+							print("Stewfield | "..tostring(KeybindSettings.Name).." Callback Error " ..tostring(Response))
+							warn('Check docs.sirius.menu for help with Stewfield specific development.')
 							task.wait(0.5)
 							Keybind.Title.Text = tostring(KeybindSettings.Name)
 							TweenService:Create(Keybind, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
@@ -3072,14 +3081,14 @@ function RayfieldLibrary:CreateWindow(Settings)
 			function KeybindSettings:Destroy()
 				if Keybind then
 					if KeybindSettings.Flag then
-						RayfieldLibrary.Flags[KeybindSettings.Flag] = nil
+						StewfieldLibrary.Flags[KeybindSettings.Flag] = nil
 					end
 					Keybind:Destroy()
 					Keybind = nil
 				end
 			end
 
-			Rayfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
+			Stewfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
 				Keybind.KeybindFrame.BackgroundColor3 = SelectedTheme.InputBackground
 				Keybind.KeybindFrame.UIStroke.Color = SelectedTheme.InputStroke
 			end)
@@ -3102,7 +3111,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 			Toggle.Title.TextTransparency = 1
 			Toggle.Switch.BackgroundColor3 = SelectedTheme.ToggleBackground
 
-			if SelectedTheme ~= RayfieldLibrary.Theme.Default then
+			if SelectedTheme ~= StewfieldLibrary.Theme.Default then
 				Toggle.Switch.Shadow.Visible = false
 			end
 
@@ -3161,8 +3170,8 @@ function RayfieldLibrary:CreateWindow(Settings)
 					TweenService:Create(Toggle, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 					TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 					Toggle.Title.Text = "Callback Error"
-					print("Rayfield | "..tostring(ToggleSettings.Name).." Callback Error " ..tostring(Response))
-					warn('Check docs.sirius.menu for help with Rayfield specific development.')
+					print("Stewfield | "..tostring(ToggleSettings.Name).." Callback Error " ..tostring(Response))
+					warn('Check docs.sirius.menu for help with Stewfield specific development.')
 					task.wait(0.5)
 					Toggle.Title.Text = tostring(ToggleSettings.Name)
 					TweenService:Create(Toggle, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
@@ -3206,8 +3215,8 @@ function RayfieldLibrary:CreateWindow(Settings)
 					TweenService:Create(Toggle, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 					TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 					Toggle.Title.Text = "Callback Error"
-					print("Rayfield | "..tostring(ToggleSettings.Name).." Callback Error " ..tostring(Response))
-					warn('Check docs.sirius.menu for help with Rayfield specific development.')
+					print("Stewfield | "..tostring(ToggleSettings.Name).." Callback Error " ..tostring(Response))
+					warn('Check docs.sirius.menu for help with Stewfield specific development.')
 					task.wait(0.5)
 					Toggle.Title.Text = tostring(ToggleSettings.Name)
 					TweenService:Create(Toggle, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
@@ -3219,17 +3228,17 @@ function RayfieldLibrary:CreateWindow(Settings)
 			function ToggleSettings:Destroy()
 				if Toggle then
 					if ToggleSettings.Flag then
-						RayfieldLibrary.Flags[ToggleSettings.Flag] = nil
+						StewfieldLibrary.Flags[ToggleSettings.Flag] = nil
 					end
 					Toggle:Destroy()
 					Toggle = nil
 				end
 			end
 
-			Rayfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
+			Stewfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
 				Toggle.Switch.BackgroundColor3 = SelectedTheme.ToggleBackground
 
-				if SelectedTheme ~= RayfieldLibrary.Theme.Default then
+				if SelectedTheme ~= StewfieldLibrary.Theme.Default then
 					Toggle.Switch.Shadow.Visible = false
 				end
 
@@ -3262,7 +3271,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 			Slider.UIStroke.Transparency = 1
 			Slider.Title.TextTransparency = 1
 
-			if SelectedTheme ~= RayfieldLibrary.Theme.Default then
+			if SelectedTheme ~= StewfieldLibrary.Theme.Default then
 				Slider.Main.Shadow.Visible = false
 			end
 
@@ -3353,8 +3362,8 @@ function RayfieldLibrary:CreateWindow(Settings)
 								TweenService:Create(Slider, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 								TweenService:Create(Slider.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 								Slider.Title.Text = "Callback Error"
-								print("Rayfield | "..tostring(SliderSettings.Name).." Callback Error " ..tostring(Response))
-								warn('Check docs.sirius.menu for help with Rayfield specific development.')
+								print("Stewfield | "..tostring(SliderSettings.Name).." Callback Error " ..tostring(Response))
+								warn('Check docs.sirius.menu for help with Stewfield specific development.')
 								task.wait(0.5)
 								Slider.Title.Text = tostring(SliderSettings.Name)
 								TweenService:Create(Slider, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
@@ -3384,8 +3393,8 @@ function RayfieldLibrary:CreateWindow(Settings)
 					TweenService:Create(Slider, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 					TweenService:Create(Slider.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 					Slider.Title.Text = "Callback Error"
-					print("Rayfield | "..tostring(SliderSettings.Name).." Callback Error " ..tostring(Response))
-					warn('Check docs.sirius.menu for help with Rayfield specific development.')
+					print("Stewfield | "..tostring(SliderSettings.Name).." Callback Error " ..tostring(Response))
+					warn('Check docs.sirius.menu for help with Stewfield specific development.')
 					task.wait(0.5)
 					Slider.Title.Text = tostring(SliderSettings.Name)
 					TweenService:Create(Slider, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
@@ -3398,15 +3407,15 @@ function RayfieldLibrary:CreateWindow(Settings)
 			function SliderSettings:Destroy()
 				if Slider then
 					if SliderSettings.Flag then
-						RayfieldLibrary.Flags[SliderSettings.Flag] = nil
+						StewfieldLibrary.Flags[SliderSettings.Flag] = nil
 					end
 					Slider:Destroy()
 					Slider = nil
 				end
 			end
 
-			Rayfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
-				if SelectedTheme ~= RayfieldLibrary.Theme.Default then
+			Stewfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
+				if SelectedTheme ~= StewfieldLibrary.Theme.Default then
 					Slider.Main.Shadow.Visible = false
 				end
 
@@ -3419,7 +3428,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 			return SliderSettings
 		end
 
-		Rayfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
+		Stewfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
 			TabButton.UIStroke.Color = SelectedTheme.TabStroke
 
 			if Elements.UIPageLayout.CurrentPage == TabPage then
@@ -3436,7 +3445,8 @@ function RayfieldLibrary:CreateWindow(Settings)
 		return Tab
 	end
 
-	function RayfieldLibrary:LoadConfiguration()
+	function StewfieldLibrary:LoadConfiguration()
+		configLoaded = true
 		Elements.Visible = true
 
 		TweenService:Create(Main, TweenInfo.new(0.7, Enum.EasingStyle.Exponential, Enum.EasingDirection.InOut), {Size = UDim2.new(0, 390, 0, 90)}):Play()
@@ -3492,9 +3502,9 @@ function RayfieldLibrary:CreateWindow(Settings)
 	function Window.ModifyTheme(NewTheme)
 		local success = pcall(ChangeTheme, NewTheme)
 		if not success then
-			RayfieldLibrary:Notify({Title = 'Unable to Change Theme', Content = 'We are unable find a theme on file.', Image = 4400704299})
+			StewfieldLibrary:Notify({Title = 'Unable to Change Theme', Content = 'We are unable find a theme on file.', Image = 4400704299})
 		else
-			RayfieldLibrary:Notify({Title = 'Theme Changed', Content = 'Successfully changed theme to '..(typeof(NewTheme) == 'string' and NewTheme or 'Custom Theme')..'.', Image = 4483362748})
+			StewfieldLibrary:Notify({Title = 'Theme Changed', Content = 'Successfully changed theme to '..(typeof(NewTheme) == 'string' and NewTheme or 'Custom Theme')..'.', Image = 4483362748})
 		end
 	end
 
@@ -3502,7 +3512,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 		createSettings(Window)
 	end)
 
-	if not success then warn('Rayfield had an issue creating settings.') end
+	if not success then warn('Stewfield had an issue creating settings.') end
 
 	return Window
 end
@@ -3519,24 +3529,24 @@ local function setVisibility(visibility: boolean, notify: boolean?)
 end
 
 -- Visibility
-function RayfieldLibrary:SetVisibility(visibility: boolean)
+function StewfieldLibrary:SetVisibility(visibility: boolean)
 	setVisibility(visibility, false)
 end
 
-function RayfieldLibrary:IsVisible(): boolean
+function StewfieldLibrary:IsVisible(): boolean
 	return not Hidden
 end
 
 local hideHotkeyConnection
-function RayfieldLibrary:Destroy()
-	rayfieldDestroyed = true
+function StewfieldLibrary:Destroy()
+	stewfieldDestroyed = true
 	if hideHotkeyConnection then
 		hideHotkeyConnection:Disconnect()
 	end
 	for _, connection in keybindConnections do
 		connection:Disconnect()
 	end
-	Rayfield:Destroy()
+	Stewfield:Destroy()
 end
 
 Topbar.ChangeSize.MouseButton1Click:Connect(function()
@@ -3629,7 +3639,7 @@ if Topbar:FindFirstChild('Settings') then
 				end
 			end
 
-			Elements.UIPageLayout:JumpTo(Elements['Rayfield Settings'])
+			Elements.UIPageLayout:JumpTo(Elements['Stewfield Settings'])
 		end)
 	end)
 end
@@ -3639,7 +3649,7 @@ Topbar.Hide.MouseButton1Click:Connect(function()
 end)
 
 hideHotkeyConnection = UserInputService.InputBegan:Connect(function(input, processed)
-	local hotkeySetting = getSetting("General", "rayfieldOpen")
+	local hotkeySetting = getSetting("General", "stewfieldOpen")
 	if typeof(hotkeySetting) == "table" then hotkeySetting = hotkeySetting[1] end
 	
 			if hotkeySetting and (input.KeyCode.Name == hotkeySetting) and not processed then
@@ -3676,4 +3686,4 @@ for _, TopbarButton in ipairs(Topbar:GetChildren()) do
 	end
 end
 
-return RayfieldLibrary
+return StewfieldLibrary
