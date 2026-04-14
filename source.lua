@@ -637,16 +637,17 @@ do
 				return nil
 			end
 
-			if nextMissing() then
-				local Main = Rayfield.Main
-				local LoadingFrame = Main.LoadingFrame
-				
-				Main.Size = UDim2.new(0, 420, 0, 100)
-				Main.Visible = true
-				Main.BackgroundTransparency = 1
-				if Main:FindFirstChild('Shadow') then
-					Main.Shadow.Image.ImageTransparency = 1
-				end
+if nextMissing() then
+    local Main = Rayfield.Main
+    local LoadingFrame = Main.LoadingFrame
+    
+    Main.Size = UDim2.new(0, 420, 0, 100)
+    Main.Visible = true
+    Main.BackgroundTransparency = 0
+    Main.BackgroundColor3 = Color3.fromRGB(25, 25, 25) 
+    if Main:FindFirstChild('Shadow') then
+        Main.Shadow.Image.ImageTransparency = 0.6
+    end
 				
 				LoadingFrame.Title.TextTransparency = 0
 				LoadingFrame.Subtitle.TextTransparency = 0
@@ -655,14 +656,23 @@ do
 				LoadingFrame.Subtitle.Text = "Downloading Assets..."
 				LoadingFrame.Visible = true
 
-				task.spawn(function()
-					while true do
-						local id = nextMissing()
-						if not id then break end
-						writefile(AssetPath.."/"..tostring(id)..".png", requestFunc({Url = assetFiles[id], Method = "GET"}).Body)
-						task.wait()
-					end
-				end)
+    task.spawn(function()
+        while true do
+            local id = nextMissing()
+            if not id then break end
+            local success, err = pcall(function()
+                local response = requestFunc({Url = assetFiles[id], Method = "GET"})
+                writefile(AssetPath.."/"..tostring(id)..".png", response.Body)
+            end)
+            
+            if not success then
+                warn("Stewfield | Failed to download asset: " .. tostring(id))
+                pcall(writefile, AssetPath.."/"..tostring(id)..".png", "") 
+            end
+            
+            task.wait()
+        end
+    end)
 
 				while nextMissing() do
 					task.wait(0.1)
